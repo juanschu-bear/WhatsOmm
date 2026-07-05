@@ -8,9 +8,10 @@ interface NotifyBody {
   url?: string
 }
 
-interface StoredSubscription {
+interface SubscriptionRow {
   endpoint: string
-  subscription: webpush.PushSubscription
+  p256dh: string
+  auth: string
 }
 
 export async function POST(req: Request) {
@@ -32,12 +33,12 @@ export async function POST(req: Request) {
   }
 
   const supabase = createClient(url, key)
-  let query = supabase.from('wa_push_subscriptions').select('endpoint, subscription').eq('source', 'whatsomm')
+  let query = supabase.from('wa_push_subscriptions').select('endpoint, p256dh, auth').eq('source', 'whatsomm')
   if (body.userId) query = query.eq('user_id', body.userId)
   const { data, error } = await query
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
-  const subs = (data ?? []) as StoredSubscription[]
+  const rows = (data ?? []) as SubscriptionRow[]
   const payload = JSON.stringify({
     title: body.title ?? 'WhatsOmm',
     body: body.body ?? 'Ein Gespräch ist beendet, die Auswertung ist da.',
@@ -46,12 +47,12 @@ export async function POST(req: Request) {
 
   let sent = 0
   await Promise.all(
-    subs.map(async (row) => {
+    rows.map(async (row) => {
       try {
-        await webpush.sendNotification(row.subscription, payload)
+        await webpush.sendNotification({ endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } }, payload)
         sent += 1
       } catch {
-        /* stale subscriptions are cleaned up by the shared maintenance job */
+        /* stale subscriptions are cleaned by the shared maintenance job */
       }
     }),
   )
