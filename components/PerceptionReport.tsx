@@ -216,7 +216,7 @@ export default function PerceptionReport({ data = SAMPLE_REPORT }: { data?: Perc
           </h1>
         </div>
         <p className="report-sub fade d1">
-          A single call, read on two layers: the answers Clara gathered, and the signal congruence OPM observed while they were spoken.
+          A single call, read on two layers: the answers gathered in conversation, and the signal congruence OPM observed while they were spoken.
         </p>
 
         <div className="subject fade d2">
@@ -363,12 +363,12 @@ export default function PerceptionReport({ data = SAMPLE_REPORT }: { data?: Perc
           </div>
         </div>
 
-        <div className="section-label">Justins Antworten</div>
+        <div className="section-label">{data.guest.name.split(' ')[0]}s Antworten</div>
         <div className="panel fade">
           <div className="p-head">
             <div>
-              <div className="k answers">Brief · {data.guest.company}</div>
-              <h3>Was Clara erfahren hat</h3>
+              <div className="k answers">{data.guest.company ? `Brief · ${data.guest.company}` : 'Aus dem Gespräch'}</div>
+              <h3>Was im Gespräch aufkam</h3>
             </div>
             <span className="pronoun" style={{ color: 'var(--gold)', borderColor: 'var(--gold-dim)' }}>
               {data.answers.length} Fragen
