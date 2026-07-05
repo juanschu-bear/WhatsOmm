@@ -1,41 +1,64 @@
 import Link from 'next/link'
-import PushOptIn from '@/components/PushOptIn'
+import { createClient } from '@supabase/supabase-js'
+import LauncherTiles from '@/components/LauncherTiles'
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+const WAVE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1024" preserveAspectRatio="xMidYMid slice"><path d="M 0 148.5 L 24 139.9 L 48 131.2 L 72 122.8 L 96 114.7 L 120 107.2 L 144 100.3 L 168 94.3 L 192 89.2 L 216 85.1 L 240 82.2 L 264 80.5 L 288 80.0 L 312 80.8 L 336 82.7 L 360 85.9 L 384 90.2 L 408 95.5 L 432 101.8 L 456 108.8 L 480 116.5 L 504 124.6 L 528 133.1 L 552 141.7 L 576 150.3 L 600 158.7 L 624 166.7 L 648 174.1 L 672 180.8 L 696 186.7 L 720 191.6 L 744 195.5 L 768 198.2 L 792 199.7 L 816 199.9 L 840 199.0 L 864 196.8 L 888 193.4 L 912 188.9 L 936 183.4 L 960 177.0 L 984 169.9 L 1008 162.1 L 1032 153.8 L 1056 145.3 L 1080 136.7 L 1104 128.1 L 1128 119.8 L 1152 111.9 L 1176 104.6 L 1200 98.0 L 1224 92.3 L 1248 87.6 L 1272 83.9 L 1296 81.4 L 1320 80.2 L 1344 80.1 L 1368 81.3 L 1392 83.8 L 1416 87.4 L 1440 92.0" fill="none" stroke="#70f0de" stroke-width="1.1" opacity="0.13"/><path d="M 0 141.9 L 24 135.3 L 48 129.9 L 72 125.5 L 96 122.4 L 120 120.6 L 144 120.0 L 168 120.7 L 192 122.7 L 216 126.0 L 240 130.5 L 264 136.1 L 288 142.8 L 312 150.4 L 336 158.9 L 360 168.2 L 384 178.0 L 408 188.3 L 432 198.9 L 456 209.7 L 480 220.5 L 504 231.1 L 528 241.4 L 552 251.3 L 576 260.6 L 600 269.1 L 624 276.8 L 648 283.6 L 672 289.2 L 696 293.8 L 720 297.1 L 744 299.2 L 768 300.0 L 792 299.5 L 816 297.7 L 840 294.7 L 864 290.4 L 888 285.0 L 912 278.5 L 936 271.0 L 960 262.6 L 984 253.5 L 1008 243.8 L 1032 233.6 L 1056 223.0 L 1080 212.2 L 1104 201.4 L 1128 190.8 L 1152 180.4 L 1176 170.4 L 1200 161.0 L 1224 152.3 L 1248 144.5 L 1272 137.6 L 1296 131.7 L 1320 127.0 L 1344 123.4 L 1368 121.1 L 1392 120.1 L 1416 120.3 L 1440 121.9" fill="none" stroke="#70f0de" stroke-width="1.1" opacity="0.11"/><path d="M 0 232.9 L 24 237.1 L 48 243.2 L 72 250.8 L 96 259.8 L 120 270.0 L 144 281.0 L 168 292.5 L 192 304.3 L 216 315.9 L 240 327.1 L 264 337.5 L 288 346.8 L 312 354.9 L 336 361.4 L 360 366.1 L 384 369.0 L 408 370.0 L 432 369.0 L 456 366.0 L 480 361.2 L 504 354.7 L 528 346.6 L 552 337.2 L 576 326.8 L 600 315.6 L 624 304.0 L 648 292.2 L 672 280.7 L 696 269.7 L 720 259.6 L 744 250.6 L 768 243.0 L 792 237.0 L 816 232.8 L 840 230.5 L 864 230.1 L 888 231.7 L 912 235.2 L 936 240.6 L 960 247.6 L 984 256.1 L 1008 265.8 L 1032 276.5 L 1056 287.9 L 1080 299.6 L 1104 311.3 L 1128 322.7 L 1152 333.4 L 1176 343.2 L 1200 351.8 L 1224 359.0 L 1248 364.4 L 1272 368.1 L 1296 369.9 L 1320 369.6 L 1344 367.4 L 1368 363.4 L 1392 357.5 L 1416 350.0 L 1440 341.1" fill="none" stroke="#70f0de" stroke-width="1.1" opacity="0.1"/><path d="M 0 126.4 L 24 122.5 L 48 117.5 L 72 111.4 L 96 104.6 L 120 97.2 L 144 89.6 L 168 82.0 L 192 74.6 L 216 67.9 L 240 61.9 L 264 57.0 L 288 53.3 L 312 50.9 L 336 50.0 L 360 50.6 L 384 52.6 L 408 55.9 L 432 60.6 L 456 66.3 L 480 72.8 L 504 80.1 L 528 87.6 L 552 95.3 L 576 102.8 L 600 109.8 L 624 116.0 L 648 121.4 L 672 125.5 L 696 128.4 L 720 129.8 L 744 129.8 L 768 128.3 L 792 125.4 L 816 121.3 L 840 115.9 L 864 109.6 L 888 102.6 L 912 95.1 L 936 87.5 L 960 79.9 L 984 72.7 L 1008 66.1 L 1032 60.4 L 1056 55.8 L 1080 52.5 L 1104 50.5 L 1128 50.0 L 1152 51.0 L 1176 53.4 L 1200 57.1 L 1224 62.0 L 1248 68.0 L 1272 74.8 L 1296 82.1 L 1320 89.7 L 1344 97.4 L 1368 104.7 L 1392 111.6 L 1416 117.6 L 1440 122.6" fill="none" stroke="#70f0de" stroke-width="1.1" opacity="0.1"/><path d="M 0 877.6 L 24 888.9 L 48 900.4 L 72 911.9 L 96 923.1 L 120 933.8 L 144 943.9 L 168 953.0 L 192 961.1 L 216 967.9 L 240 973.2 L 264 977.1 L 288 979.4 L 312 980.0 L 336 979.0 L 360 976.3 L 384 972.0 L 408 966.3 L 432 959.2 L 456 950.8 L 480 941.5 L 504 931.2 L 528 920.3 L 552 909.0 L 576 897.5 L 600 886.1 L 624 874.9 L 648 864.3 L 672 854.4 L 696 845.4 L 720 837.6 L 744 831.0 L 768 825.9 L 792 822.4 L 816 820.4 L 840 820.1 L 864 821.4 L 888 824.4 L 912 828.9 L 936 834.9 L 960 842.3 L 984 850.8 L 1008 860.4 L 1032 870.7 L 1056 881.7 L 1080 893.1 L 1104 904.6 L 1128 916.0 L 1152 927.1 L 1176 937.6 L 1200 947.4 L 1224 956.1 L 1248 963.7 L 1272 970.0 L 1296 974.8 L 1320 978.1 L 1344 979.8 L 1368 979.8 L 1392 978.2 L 1416 974.9 L 1440 970.1" fill="none" stroke="#70f0de" stroke-width="1.1" opacity="0.09"/><path d="M 0 1019.4 L 24 1024.6 L 48 1029.0 L 72 1032.8 L 96 1035.9 L 120 1038.1 L 144 1039.5 L 168 1040.0 L 192 1039.7 L 216 1038.5 L 240 1036.4 L 264 1033.6 L 288 1030.0 L 312 1025.7 L 336 1020.7 L 360 1015.1 L 384 1009.0 L 408 1002.5 L 432 995.7 L 456 988.7 L 480 981.5 L 504 974.3 L 528 967.2 L 552 960.3 L 576 953.6 L 600 947.4 L 624 941.6 L 648 936.3 L 672 931.7 L 696 927.8 L 720 924.6 L 744 922.3 L 768 920.7 L 792 920.0 L 816 920.2 L 840 921.2 L 864 923.1 L 888 925.8 L 912 929.3 L 936 933.5 L 960 938.4 L 984 943.9 L 1008 949.9 L 1032 956.3 L 1056 963.1 L 1080 970.1 L 1104 977.2 L 1128 984.4 L 1152 991.5 L 1176 998.5 L 1200 1005.2 L 1224 1011.5 L 1248 1017.4 L 1272 1022.8 L 1296 1027.5 L 1320 1031.5 L 1344 1034.9 L 1368 1037.4 L 1392 1039.1 L 1416 1039.9 L 1440 1039.9" fill="none" stroke="#70f0de" stroke-width="1.1" opacity="0.08"/><circle cx="0" cy="148.5" r="1.2" fill="#8ff6e8" opacity="0.23"/><circle cx="120" cy="107.2" r="1.6" fill="#8ff6e8" opacity="0.23"/><circle cx="360" cy="85.9" r="1.6" fill="#8ff6e8" opacity="0.23"/><circle cx="600" cy="158.7" r="1.2" fill="#8ff6e8" opacity="0.23"/><circle cx="720" cy="191.6" r="1.9" fill="#8ff6e8" opacity="0.23"/><circle cx="960" cy="177.0" r="1.2" fill="#8ff6e8" opacity="0.23"/><circle cx="1080" cy="136.7" r="1.6" fill="#8ff6e8" opacity="0.23"/><circle cx="1200" cy="98.0" r="1.2" fill="#8ff6e8" opacity="0.23"/><circle cx="1320" cy="80.2" r="1.2" fill="#8ff6e8" opacity="0.23"/><circle cx="1440" cy="92.0" r="1.6" fill="#8ff6e8" opacity="0.23"/><circle cx="120" cy="120.6" r="1.2" fill="#8ff6e8" opacity="0.21"/><circle cx="240" cy="130.5" r="1.9" fill="#8ff6e8" opacity="0.21"/><circle cx="720" cy="297.1" r="1.2" fill="#8ff6e8" opacity="0.21"/><circle cx="960" cy="262.6" r="1.6" fill="#8ff6e8" opacity="0.21"/><circle cx="1200" cy="161.0" r="1.6" fill="#8ff6e8" opacity="0.21"/><circle cx="1320" cy="127.0" r="1.6" fill="#8ff6e8" opacity="0.21"/><circle cx="1440" cy="121.9" r="1.2" fill="#8ff6e8" opacity="0.21"/><circle cx="0" cy="232.9" r="1.2" fill="#8ff6e8" opacity="0.20"/><circle cx="240" cy="327.1" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="600" cy="315.6" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="840" cy="230.5" r="1.9" fill="#8ff6e8" opacity="0.20"/><circle cx="960" cy="247.6" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="1080" cy="299.6" r="1.2" fill="#8ff6e8" opacity="0.20"/><circle cx="1320" cy="369.6" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="1440" cy="341.1" r="1.9" fill="#8ff6e8" opacity="0.20"/><circle cx="120" cy="97.2" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="240" cy="61.9" r="1.9" fill="#8ff6e8" opacity="0.20"/><circle cx="600" cy="109.8" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="1200" cy="57.1" r="1.6" fill="#8ff6e8" opacity="0.20"/><circle cx="1440" cy="122.6" r="1.9" fill="#8ff6e8" opacity="0.20"/><circle cx="0" cy="877.6" r="1.6" fill="#8ff6e8" opacity="0.19"/><circle cx="240" cy="973.2" r="1.2" fill="#8ff6e8" opacity="0.19"/><circle cx="360" cy="976.3" r="1.2" fill="#8ff6e8" opacity="0.19"/><circle cx="480" cy="941.5" r="1.2" fill="#8ff6e8" opacity="0.19"/><circle cx="1080" cy="893.1" r="1.2" fill="#8ff6e8" opacity="0.19"/><circle cx="0" cy="1019.4" r="1.2" fill="#8ff6e8" opacity="0.18"/><circle cx="360" cy="1015.1" r="1.2" fill="#8ff6e8" opacity="0.18"/><circle cx="600" cy="947.4" r="1.9" fill="#8ff6e8" opacity="0.18"/><circle cx="1200" cy="1005.2" r="1.2" fill="#8ff6e8" opacity="0.18"/><circle cx="1320" cy="1031.5" r="1.2" fill="#8ff6e8" opacity="0.18"/></svg>`
+
+async function getReportCount(): Promise<number> {
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_KEY
+  if (!url || !key) return 0
+  try {
+    const supabase = createClient(url, key)
+    const { count, error } = await supabase
+      .from('wa_perception_reports')
+      .select('conversation_id', { count: 'exact', head: true })
+    if (error) return 0
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
+export default async function Home() {
+  const count = await getReportCount()
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        gap: 20,
-        maxWidth: 720,
-        margin: '0 auto',
-        padding: '48px 28px',
-        fontFamily: 'system-ui, sans-serif',
-        background:
-          'radial-gradient(900px 600px at 85% -8%, rgba(112,240,222,0.07), transparent 60%), #080b11',
-      }}
-    >
-      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, letterSpacing: 2, color: '#70f0de', textTransform: 'uppercase' }}>
-        ONIOKO · Observational Perception
-      </div>
-      <h1 style={{ fontSize: 44, lineHeight: 1.05, margin: 0, color: '#eef2f8', fontFamily: 'Georgia, serif' }}>
-        WhatsOmm
-      </h1>
-      <p style={{ color: '#9aa6b8', fontSize: 17, maxWidth: 560, margin: 0 }}>
-        Wenn ein Gespräch endet, liest WhatsOmm es auf zwei Ebenen: was gesagt wurde, und ob das Gesagte und das Gezeigte zusammenhielten. Aktiviere Benachrichtigungen, dann bist du sofort dabei, wenn eine Auswertung bereitsteht.
-      </p>
-      <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
-        <PushOptIn />
-        <Link href="/report/kf-33738551" style={{ color: '#d8c290', fontSize: 14, textDecoration: 'none', borderBottom: '1px solid rgba(216,194,144,0.4)' }}>
-          Beispiel-Report ansehen
+    <main className="launcher">
+      <div className="lc-bg" aria-hidden dangerouslySetInnerHTML={{ __html: WAVE_SVG }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="wm-icon" src="/icons/icon-tile.png" alt="" aria-hidden />
+      <div className="wm-word" aria-hidden>WhatsOmm</div>
+
+      <div className="lc-wrap">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="lc-icon" src="/icons/icon-tile.png" alt="WhatsOmm" />
+        <h1 className="lc-title">WhatsOmm</h1>
+        <div className="lc-karo">
+          <span className="l1">Observational Memory</span>
+          <span className="l2">Observational Perception Models</span>
+        </div>
+        <div className="lc-beta"><span className="d" />Beta</div>
+        <p className="lc-tagline">Deine Wahrnehmungs-Ebene ist bereit.</p>
+
+        <div className="lc-account"><span className="k">Account</span><span className="v">Juan</span></div>
+
+        <Link href="/reports" className="lc-primary">
+          <span>Auswertungen ansehen</span>
+          <span className="cnt">{count}</span>
         </Link>
-      </div>
-      <div style={{ marginTop: 40, fontSize: 12, color: '#6b7688' }}>
-        OPM erkennt Signal-Kongruenz, keine emotionalen Zustände. Verarbeitung auf EU-Servern.
+
+        <div className="lc-grid">
+          <Link href="/report/kf-33738551" className="tile">
+            <span className="ic">&#9678;</span>
+            <span className="lb">Beispiel-Report</span>
+            <span className="hint">So sieht eine Auswertung aus</span>
+          </Link>
+          <LauncherTiles />
+        </div>
+
+        <div className="lc-foot"><span className="dot" />OPM erkennt Signal-Kongruenz, keine emotionalen Zust&auml;nde. Verarbeitung auf EU-Servern.</div>
       </div>
     </main>
   )

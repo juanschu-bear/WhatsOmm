@@ -1,7 +1,17 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
+import { Inter, Cormorant_Garamond, JetBrains_Mono } from 'next/font/google'
 import PwaRegister from '@/components/PwaRegister'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-cormorant',
+  display: 'swap',
+})
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
   title: 'WhatsOmm — Perception Reports',
@@ -20,7 +30,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="de">
+    <html lang="de" className={`${inter.variable} ${cormorant.variable} ${mono.variable}`}>
       <body>
         {children}
         <PwaRegister />
