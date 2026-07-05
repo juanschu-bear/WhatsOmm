@@ -27,8 +27,16 @@ export default function LauncherTiles() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) setNotify('unsupported')
-    if (Notification?.permission === 'granted') setNotify('on')
+    const supportsPush =
+      window.isSecureContext &&
+      'serviceWorker' in navigator &&
+      'PushManager' in window &&
+      'Notification' in window
+    if (!supportsPush) {
+      setNotify('unsupported')
+    } else if (window.Notification.permission === 'granted') {
+      setNotify('on')
+    }
     const onPrompt = (e: Event) => {
       e.preventDefault()
       setInstallEvt(e as BeforeInstallPromptEvent)
@@ -39,10 +47,20 @@ export default function LauncherTiles() {
 
   async function enableNotifications() {
     try {
+      if (
+        typeof window === 'undefined' ||
+        !window.isSecureContext ||
+        !('serviceWorker' in navigator) ||
+        !('PushManager' in window) ||
+        !('Notification' in window)
+      ) {
+        setNotify('unsupported')
+        return
+      }
       const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
       if (!key) { setNotify('error'); return }
       const reg = await navigator.serviceWorker.ready
-      const permission = await Notification.requestPermission()
+      const permission = await window.Notification.requestPermission()
       if (permission !== 'granted') { setNotify('error'); return }
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
