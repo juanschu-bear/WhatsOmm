@@ -1,5 +1,7 @@
 'use client'
 
+import { reportLabels } from '@/lib/report-labels'
+
 import { useEffect, useMemo, useRef } from 'react'
 import { type PerceptionReportData } from '@/lib/perception-report'
 
@@ -185,10 +187,12 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
     }
   }, [])
 
+  const locale = data.locale || data.call.language.toLowerCase()
+  const labels = reportLabels[locale as keyof typeof reportLabels] || reportLabels.en
   const blendMax = useMemo(() => Math.max(1, ...data.cygnus.blendshapes), [data.cygnus.blendshapes])
 
   return (
-    <div className="opm-report">
+    <div className="opm-report" lang={locale}>
       <style>{REPORT_CSS}</style>
       <div className="dust" ref={dustRef} />
 
@@ -198,11 +202,11 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
             <div className="mark">O</div>
             <div>
               <div className="name">ONIOKO</div>
-              <div className="sub">OBSERVATIONAL PERCEPTION</div>
+              <div className="sub">{labels.observation}</div>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="eyebrow">Perception Report</div>
+            <div className="eyebrow">{labels.report}</div>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: 'var(--muted-2)', marginTop: 4 }}>
               REF · {data.ref} · {data.date}
             </div>
@@ -212,11 +216,11 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
         <div className="report-title fade d1">
           <div className="eyebrow" style={{ color: 'var(--gold)' }}>{data.eyebrow}</div>
           <h1>
-            What was said, and whether it <em>held together</em>.
+            {labels.title}
           </h1>
         </div>
         <p className="report-sub fade d1">
-          A single call, read on two layers: the answers gathered in conversation, and the signal congruence OPM observed while they were spoken.
+          {labels.intro}
         </p>
 
         <div className="subject fade d2">
@@ -226,9 +230,9 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
             <span>{data.guest.role} · {data.guest.company}</span>
           </div>
           <div className="spacer" />
-          <div className="meta-chip"><span className="dot" style={{ background: 'var(--signal)' }} />Dauer <b>{data.call.duration}</b></div>
-          <div className="meta-chip">Sprache <b>{data.call.language}</b></div>
-          {data.call.consent ? <span className="badge ok">● Aufnahme freigegeben</span> : null}
+          <div className="meta-chip"><span className="dot" style={{ background: 'var(--signal)' }} />{labels.duration} <b>{data.call.duration}</b></div>
+          <div className="meta-chip">{labels.language} <b>{data.call.language}</b></div>
+          {data.call.consent ? <span className="badge ok">{labels.consent}</span> : null}
           <button
             className="btn-rec"
             disabled={!data.call.recordingUrl}
@@ -236,32 +240,32 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
               if (data.call.recordingUrl) window.open(data.call.recordingUrl, '_blank', 'noopener')
             }}
           >
-            ▶ Aufnahme ansehen
+            {labels.recording}
           </button>
         </div>
 
-        <div className="section-label fade d2">Das Herzstück</div>
+        <div className="section-label fade d2">{labels.assessment}</div>
         <div className="congruence fade d2">
           <div className="head">
             <div className="l">
-              <div className="k">Signal Congruence</div>
-              <h2>Hielt das Gesagte und das Gezeigte zusammen?</h2>
+              <div className="k">{labels.congruence}</div>
+              <h2>{labels.comparison}</h2>
             </div>
             <div className="score">
               <div className="num">
-                {data.congruence.score}
-                <span style={{ fontSize: 22, color: 'var(--muted-2)' }}>%</span>
+                {data.congruence.score ?? '—'}
+                {data.congruence.score != null && <span style={{ fontSize: 22, color: 'var(--muted-2)' }}>%</span>}
               </div>
-              <div className="lab">Congruent</div>
+              <div className="lab">{labels.congruence}</div>
             </div>
           </div>
-          <div className="tracks">
+          {data.congruence.score != null && <><div className="tracks">
             <div className="track">
-              <div className="tlab">Verbal</div>
+              <div className="tlab">{labels.verbal}</div>
               <div className="bar verbal"><i style={{ width: `${data.congruence.verbal}%` }} /></div>
             </div>
             <div className="track">
-              <div className="tlab">Signal</div>
+              <div className="tlab">{labels.signal}</div>
               <div className="bar signal">
                 <i style={{ width: `${data.congruence.signal}%` }} />
                 {data.congruence.mismatch ? (
@@ -271,11 +275,11 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
             </div>
           </div>
           <div className="legend">
-            <span><span className="swatch" style={{ background: 'rgba(216,194,144,0.8)' }} />Verbale Sicherheit (Wortwahl, Tempo)</span>
-            <span><span className="swatch" style={{ background: 'rgba(112,240,222,0.8)' }} />Signal-Evidenz (Mikroausdruck, Prosodie)</span>
-            <span><span className="swatch" style={{ background: 'rgba(239,125,125,0.8)' }} />Inkongruenz-Moment</span>
+            <span><span className="swatch" style={{ background: 'rgba(216,194,144,0.8)' }} />{labels.verbalLegend}</span>
+            <span><span className="swatch" style={{ background: 'rgba(112,240,222,0.8)' }} />{labels.signalLegend}</span>
+            <span><span className="swatch" style={{ background: 'rgba(239,125,125,0.8)' }} />{labels.mismatch}</span>
           </div>
-          <div className="congr-note">
+          </>}<div className="congr-note">
             <span>◆</span>
             <span>{data.congruence.note}</span>
           </div>
@@ -285,10 +289,10 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
           <div className="panel fade d3">
             <div className="p-head">
               <div>
-                <div className="k lucid">LUCID · Interpretation</div>
-                <h3>Was das Gespräch erzählt</h3>
+                <div className="k lucid">{labels.narrative}</div>
+                <h3>{labels.story}</h3>
               </div>
-              <span className="pronoun">she</span>
+              
             </div>
             <div className="lucid-body">
               {data.lucid.paragraphs.map((para, i) => (
@@ -300,10 +304,10 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
               {data.lucid.pull ? <div className="pull">{data.lucid.pull}</div> : null}
             </div>
             <div className="lucid-meta">
-              <span>MODELL · {data.lucid.model}</span>
-              <span>{data.lucid.words} WÖRTER</span>
+              <span>{labels.model} · {data.lucid.model}</span>
+              <span>{data.lucid.words} {labels.words}</span>
               <span>{data.lucid.latency}</span>
-              <span>{data.lucid.chunks} CHUNK · 2 GPU</span>
+              
             </div>
           </div>
 
@@ -311,15 +315,15 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
             <div className="panel fade d3">
               <div className="p-head">
                 <div>
-                  <div className="k cygnus">CYGNUS · Signale</div>
-                  <h3>Was sichtbar war</h3>
+                  <div className="k cygnus">{labels.signals}</div>
+                  <h3>{labels.visible}</h3>
                 </div>
-                <span className="pronoun">it</span>
+                
               </div>
               <div className="cyg">
                 <div className="expr">
                   <div className="big">{data.cygnus.expression}</div>
-                  <div className="pct">{data.cygnus.expressionPct}%</div>
+                  {data.cygnus.expressionPct != null && <div className="pct">{data.cygnus.expressionPct}%</div>}
                 </div>
                 {data.cygnus.aus.map((au) => (
                   <div className="au" key={au.name}>
@@ -334,7 +338,7 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
                   ))}
                 </div>
                 <div className="blend-cap">
-                  52 BLENDSHAPES · {data.cygnus.frames} FRAMES @ 1FPS · {data.cygnus.resolution}
+                  {data.cygnus.resolution}
                 </div>
               </div>
             </div>
@@ -342,12 +346,13 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
             <div className="panel fade d4">
               <div className="p-head">
                 <div>
-                  <div className="k oracle">ORACLE · Muster</div>
-                  <h3>Was zusammenhing</h3>
+                  <div className="k oracle">{labels.patterns}</div>
+                  <h3>{labels.connections}</h3>
                 </div>
-                <span className="pronoun">he</span>
+                
               </div>
               <div className="oracle">
+                {!data.oracle.patterns.length && <p>{labels.noPatterns}</p>}
                 {data.oracle.patterns.map((p) => (
                   <div className="pattern" key={p.title}>
                     <div className="pi">{p.icon}</div>
@@ -363,15 +368,15 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
           </div>
         </div>
 
-        <div className="section-label">{data.guest.name.split(' ')[0]}s Antworten</div>
+        <div className="section-label">{labels.answers}</div>
         <div className="panel fade">
           <div className="p-head">
             <div>
-              <div className="k answers">{data.guest.company ? `Brief · ${data.guest.company}` : 'Aus dem Gespräch'}</div>
-              <h3>Was im Gespräch aufkam</h3>
+              <div className="k answers">{labels.fromCall}</div>
+              <h3>{labels.topics}</h3>
             </div>
             <span className="pronoun" style={{ color: 'var(--gold)', borderColor: 'var(--gold-dim)' }}>
-              {data.answers.length} Fragen
+              {data.answers.length} {labels.questions}
             </span>
           </div>
           <div className="qa">
@@ -398,10 +403,10 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
           <div className="panel fade">
             <div className="p-head">
               <div>
-                <div className="k" style={{ color: 'var(--muted)' }}>Transkript</div>
-                <h3>Wortlaut</h3>
+                <div className="k" style={{ color: 'var(--muted)' }}>{labels.transcript}</div>
+                <h3>{labels.wording}</h3>
               </div>
-              <span className="pronoun">{data.call.language} · vollständig</span>
+              <span className="pronoun">{labels.original}</span>
             </div>
             <div className="transcript">
               {data.transcript.map((line, i) => (
@@ -417,8 +422,8 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
           <div className="panel fade">
             <div className="p-head">
               <div>
-                <div className="k answers">Termin</div>
-                <h3>Vorgeschlagen</h3>
+                <div className="k answers">{labels.appointment}</div>
+                <h3>{labels.proposed}</h3>
               </div>
             </div>
             <div className="sched">
@@ -437,9 +442,9 @@ export default function PerceptionReport({ data }: { data: PerceptionReportData 
 
         <div className="legal">
           <div className="compliance">
-            <span className="dot" />OPM erkennt Signal-Kongruenz, keine emotionalen Zustände. Verarbeitung auf EU-Servern.
+            <span className="dot" />{labels.legal}
           </div>
-          <div>ONIOKO · EXIDEUS LLC · Perception Report</div>
+          <div>ONIOKO · EXIDEUS LLC · {labels.report}</div>
         </div>
       </div>
     </div>

@@ -3,15 +3,16 @@
 // data source (Supabase wa_perception_reports) requires no visual changes.
 
 export interface PerceptionReportData {
+  locale?: 'de' | 'en' | 'es'
   ref: string
   date: string
   eyebrow: string
   guest: { name: string; role: string; company: string; initials: string }
   call: { duration: string; language: string; consent: boolean; recordingUrl: string | null }
   congruence: {
-    score: number
-    verbal: number
-    signal: number
+    score: number | null
+    verbal: number | null
+    signal: number | null
     mismatch: { pos: number; label: string } | null
     note: string
   }
@@ -25,7 +26,7 @@ export interface PerceptionReportData {
   }
   cygnus: {
     expression: string
-    expressionPct: number
+    expressionPct: number | null
     aus: Array<{ name: string; value: number }>
     blendshapes: number[]
     frames: number
