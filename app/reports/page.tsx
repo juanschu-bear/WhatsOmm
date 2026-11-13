@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 export const dynamic = 'force-dynamic'
 
 interface ReportRow {
+  id: string
   conversation_id: string
   created_at: string
   report: {
@@ -15,23 +16,25 @@ interface ReportRow {
 async function loadReports(): Promise<ReportRow[]> {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_KEY
-  if (!url || !key) return []
+  if (!url || !key) throw new Error('report_store_unavailable')
   try {
     const supabase = createClient(url, key)
     const { data, error } = await supabase
       .from('wa_perception_reports')
-      .select('conversation_id, created_at, report')
+      .select('id, conversation_id, created_at, report')
       .order('created_at', { ascending: false })
       .limit(50)
-    if (error || !data) return []
-    return data as ReportRow[]
+    if (error) throw new Error('report_list_failed')
+    return (data ?? []) as ReportRow[]
   } catch {
-    return []
+    throw new Error('report_list_failed')
   }
 }
 
 export default async function ReportsPage() {
-  const rows = await loadReports()
+  let rows: ReportRow[]
+  try { rows = await loadReports() }
+  catch { return <main className="reports"><h1>Auswertungen konnten nicht geladen werden</h1><p>Bitte versuche es später erneut.</p></main> }
   return (
     <main className="reports">
       <div className="rp-head">
@@ -44,17 +47,16 @@ export default async function ReportsPage() {
         <div className="rp-empty">
           <p>Noch keine Auswertungen.</p>
           <p>Nach einem Gespr&auml;ch ab 90 Sekunden erscheint die Auswertung automatisch hier.</p>
-          <Link href="/report/kf-33738551" className="rp-samplelink">Beispiel-Report ansehen</Link>
         </div>
       ) : (
         <ul className="rp-list">
           {rows.map((r) => {
             const g = r.report?.guest
             const score = r.report?.congruence?.score
-            const when = new Date(r.created_at).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' })
+            const when = new Date(r.created_at).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Berlin' })
             return (
-              <li key={r.conversation_id}>
-                <Link href={`/report/${r.conversation_id}`} className="rp-item">
+              <li key={r.id}>
+                <Link href={`/report/${r.conversation_id}?reportId=${r.id}`} className="rp-item">
                   <div className="rp-main">
                     <div className="rp-name">{g?.name ?? r.conversation_id}</div>
                     <div className="rp-sub">{[g?.company, when].filter(Boolean).join(' \u00b7 ')}</div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef } from 'react'
-import { type PerceptionReportData, SAMPLE_REPORT } from '@/lib/perception-report'
+import { type PerceptionReportData } from '@/lib/perception-report'
 
 /**
  * OPM Perception Report — 1:1 port of the approved mockup.
@@ -149,7 +149,7 @@ const REPORT_CSS = `
 const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap'
 
-export default function PerceptionReport({ data = SAMPLE_REPORT }: { data?: PerceptionReportData }) {
+export default function PerceptionReport({ data }: { data: PerceptionReportData }) {
   const dustRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
